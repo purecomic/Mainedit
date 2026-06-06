@@ -98,6 +98,15 @@ export default function Admin() {
 
   const updateTxStatus = async (id, status) => {
     await supabase.from('transactions').update({ status }).eq('id', id);
+    if (status === 'completed') {
+      const tx = transactions.find(t => t.id === id);
+      if (tx) {
+        const { data: prof } = await supabase.from('profiles').select('balance').eq('id', tx.user_id).single();
+        const newBal = (prof?.balance || 0) + parseFloat(tx.amount || 0);
+        await supabase.from('profiles').update({ balance: newBal }).eq('id', tx.user_id);
+        setUsers(prev => prev.map(u => u.id === tx.user_id ? { ...u, balance: newBal } : u));
+      }
+    }
     setTransactions(prev => prev.map(t => t.id === id ? { ...t, status } : t));
   };
 
