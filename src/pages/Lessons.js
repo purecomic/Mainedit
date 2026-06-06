@@ -77,7 +77,7 @@ export default function Lessons() {
             {contacts.map(contact => (
               <a
                 key={contact.id}
-                href={contact.link || '#'}
+                href={contact.platform === 'whatsapp' ? `https://wa.me/${contact.handle.replace(/[^0-9]/g,'')}` : contact.platform === 'telegram' ? `https://t.me/${contact.handle}` : contact.link || '#'} target='_blank' rel='noopener noreferrer'
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{ textDecoration: 'none' }}
