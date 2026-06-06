@@ -49,6 +49,8 @@ export default function Admin() {
     const { data: ct } = await supabase.from('lesson_contacts').select('*').order('created_at');
     setUsers(profs || []);
     setTransactions(tx || []);
+    setStats({ users: (profs||[]).length, revenue: (tx||[]).filter(t=>t.status==="completed").reduce((a,b)=>a+(parseFloat(b.amount)||0),0), downloads: (dl||[]).length });
+    setTransactions(tx || []);
     setContacts(ct || []);
     const totalRevenue = (tx || []).filter(t => t.type === 'deposit' && t.status === 'completed').reduce((a, t) => a + (t.amount || 0), 0);
     setStats({ users: (profs || []).length, revenue: totalRevenue, downloads: (dl || []).length });
