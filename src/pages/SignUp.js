@@ -41,6 +41,10 @@ export default function SignUp() {
 
         {!success && <>
           <div className="input-group">
+                <label>Referral Code (optional)</label>
+                <input className="input-field" placeholder="Enter referral code" value={refCode} onChange={e => setRefCode(e.target.value.toUpperCase())} />
+              </div>
+            <div className="input-group">
             <label>Full Name</label>
             <input className="input-field" placeholder="John Doe" value={fullName} onChange={e => setFullName(e.target.value)} />
           </div>
