@@ -28,6 +28,16 @@ export default function Admin() {
   const [contactMsg, setContactMsg] = useState('');
   // Transactions
   const [transactions, setTransactions] = useState([]);
+  // Upload
+  const [uploadTitle, setUploadTitle] = useState('');
+  const [uploadDesc, setUploadDesc] = useState('');
+  const [uploadPrice, setUploadPrice] = useState('');
+  const [uploadCat, setUploadCat] = useState('general');
+  const [uploadAudio, setUploadAudio] = useState(null);
+  const [uploadPreview, setUploadPreview] = useState(null);
+  const [uploadCover, setUploadCover] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadMsg, setUploadMsg] = useState('');
   const [stats, setStats] = useState({ users: 0, revenue: 0, downloads: 0 });
 
   // Guard: must be logged in as admin
@@ -115,6 +125,57 @@ export default function Admin() {
       }
     }
     setTransactions(prev => prev.map(t => t.id === id ? { ...t, status } : t));
+  };
+
+  const handleUpload = async () => {
+    if (!uploadTitle || !uploadPrice || !uploadAudio) {
+      setUploadMsg('❌ Title, price and audio file are required.');
+      return;
+    }
+    setUploading(true);
+    setUploadMsg('');
+    try {
+      const audioExt = uploadAudio.name.split('.').pop();
+      const audioPath = `${Date.now()}.${audioExt}`;
+      await supabase.storage.from('effects').upload(audioPath, uploadAudio);
+      const { data: audioData } = supabase.storage.from('effects').getPublicUrl(audioPath);
+
+      let previewUrl = null;
+      if (uploadPreview) {
+        const prevExt = uploadPreview.name.split('.').pop();
+        const prevPath = `preview_${Date.now()}.${prevExt}`;
+        await supabase.storage.from('previews').upload(prevPath, uploadPreview);
+        const { data: prevData } = supabase.storage.from('previews').getPublicUrl(prevPath);
+        previewUrl = prevData.publicUrl;
+      }
+
+      let coverUrl = null;
+      if (uploadCover) {
+        const covExt = uploadCover.name.split('.').pop();
+        const covPath = `cover_${Date.now()}.${covExt}`;
+        await supabase.storage.from('effects').upload(covPath, uploadCover);
+        const { data: covData } = supabase.storage.from('effects').getPublicUrl(covPath);
+        coverUrl = covData.publicUrl;
+      }
+
+      await supabase.from('effects').insert({
+        title: uploadTitle,
+        description: uploadDesc,
+        price: parseFloat(uploadPrice),
+        category: uploadCat,
+        audio_url: audioData.publicUrl,
+        preview_url: previewUrl,
+        cover_url: coverUrl,
+        downloads: 0
+      });
+
+      setUploadMsg('✅ Effect uploaded successfully!');
+      setUploadTitle(''); setUploadDesc(''); setUploadPrice('');
+      setUploadAudio(null); setUploadPreview(null); setUploadCover(null);
+    } catch(e) {
+      setUploadMsg('❌ Upload failed: ' + e.message);
+    }
+    setUploading(false);
   };
 
   if (!user || user.email !== ADMIN_EMAIL) return null;
@@ -293,6 +354,47 @@ export default function Admin() {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* UPLOAD TAB */}
+        {activeTab === 'upload' && (
+          <div className="card">
+            <h3 style={{ fontSize: 18, marginBottom: 16 }}>📤 Upload Sound Effect</h3>
+            {uploadMsg && <div className={`alert ${uploadMsg.startsWith('✅') ? 'alert-success' : 'alert-error'}`} style={{ marginBottom: 12 }}>{uploadMsg}</div>}
+            <div className="input-group">
+              <label>Title *</label>
+              <input className="input-field" placeholder="e.g. Cinematic Boom" value={uploadTitle} onChange={e => setUploadTitle(e.target.value)} />
+            </div>
+            <div className="input-group">
+              <label>Description</label>
+              <input className="input-field" placeholder="Short description" value={uploadDesc} onChange={e => setUploadDesc(e.target.value)} />
+            </div>
+            <div className="input-group">
+              <label>Price (USD) *</label>
+              <input className="input-field" type="number" placeholder="e.g. 1.99" value={uploadPrice} onChange={e => setUploadPrice(e.target.value)} />
+            </div>
+            <div className="input-group">
+              <label>Category</label>
+              <select className="input-field" value={uploadCat} onChange={e => setUploadCat(e.target.value)}>
+                {['general','horror','funny','romantic','action','crying','nature','cinematic'].map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+            <div className="input-group">
+              <label>Full Audio File * (.mp3)</label>
+              <input type="file" accept="audio/*" className="input-field" onChange={e => setUploadAudio(e.target.files[0])} />
+            </div>
+            <div className="input-group">
+              <label>Preview Clip (optional, short clip)</label>
+              <input type="file" accept="audio/*" className="input-field" onChange={e => setUploadPreview(e.target.files[0])} />
+            </div>
+            <div className="input-group">
+              <label>Cover Image (optional)</label>
+              <input type="file" accept="image/*" className="input-field" onChange={e => setUploadCover(e.target.files[0])} />
+            </div>
+            <button className="btn btn-primary" onClick={handleUpload} disabled={uploading}>
+              {uploading ? '⏳ Uploading...' : '📤 Upload Effect'}
+            </button>
           </div>
         )}
 
