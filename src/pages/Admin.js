@@ -221,7 +221,7 @@ export default function Admin() {
 
         {/* Tabs */}
         <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 8, marginBottom: 16, scrollbarWidth: 'none' }}>
-          {[['users','👥 Users'], ['notifications','🔔 Notify'], ['contacts','📞 Lessons'], ['transactions','💳 Transactions']].map(([id, label]) => (
+          {[['users','👥 Users'], ['notifications','🔔 Notify'], ['contacts','📞 Lessons'], ['transactions','💳 Transactions',['upload','Upload']].map(([id, label]) => (
             <button key={id} onClick={() => setActiveTab(id)} style={{
               flexShrink: 0, padding: '8px 14px', borderRadius: 10, fontSize: 12, fontWeight: 600, cursor: 'pointer',
               background: activeTab === id ? 'var(--accent3)' : 'var(--bg3)',
