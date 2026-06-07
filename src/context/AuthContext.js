@@ -64,12 +64,19 @@ export const AuthProvider = ({ children }) => {
       options: { data: { full_name: fullName } }
     });
     if (!error && data.user) {
+      const refCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+      const referredBy = localStorage.getItem('referral_code') || null;
       await supabase.from('profiles').insert({
         id: data.user.id,
         email,
         full_name: fullName,
-        balance: 0
+        balance: 0,
+        referral_balance: 0,
+        referral_code: refCode,
+        referred_by: referredBy,
+        has_deposited: false
       });
+      localStorage.removeItem('referral_code');
     }
     return { data, error };
   };

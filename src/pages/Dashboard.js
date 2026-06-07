@@ -40,6 +40,8 @@ export default function Dashboard() {
   if (loading) return <div className="page"><div className="spinner" /></div>;
 
   const balance = profile?.balance || 0;
+  const refBalance = profile?.referral_balance || 0;
+  const refCode = profile?.referral_code || '';
   const balanceConverted = convertPrice(balance);
 
   return (
@@ -95,6 +97,16 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {/* Referral Card */}
+        <div className="card" style={{ marginBottom: 20, background: 'linear-gradient(135deg,#1a1a2e,#16213e)', border: '1px solid rgba(124,92,252,0.3)' }}>
+          <div style={{ fontSize: 13, color: 'var(--text3)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 2 }}>🎁 Your Referral Code</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+            <div style={{ fontFamily: "'Bebas Neue', cursive", fontSize: 28, letterSpacing: 4, color: 'var(--accent)' }}>{refCode}</div>
+            <button className="btn btn-secondary btn-sm" onClick={() => { navigator.clipboard.writeText(refCode); }}>Copy</button>
+          </div>
+          <div style={{ fontSize: 12, color: 'var(--text2)', marginBottom: 6 }}>Share your code. Earn <span style={{ color: 'var(--success)', fontWeight: 700 }}>$1 referral bonus</span> when someone signs up and makes their first deposit.</div>
+          <div style={{ fontSize: 12, color: 'var(--text3)' }}>💰 Referral Balance: <span style={{ color: 'var(--accent)', fontWeight: 700 }}>${refBalance.toFixed(2)}</span> <span style={{ fontSize: 10 }}>(usable for effects only)</span></div>
+        </div>
         {/* Stats */}
         <div className="stats-grid" style={{ marginBottom: 20 }}>
           <div className="stat-card">

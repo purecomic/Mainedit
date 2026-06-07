@@ -101,10 +101,17 @@ export default function Admin() {
     if (status === 'completed') {
       const tx = transactions.find(t => t.id === id);
       if (tx) {
-        const { data: prof } = await supabase.from('profiles').select('balance').eq('id', tx.user_id).single();
+        const { data: prof } = await supabase.from('profiles').select('balance, has_deposited, referred_by, referral_balance').eq('id', tx.user_id).single();
         const newBal = (prof?.balance || 0) + parseFloat(tx.amount || 0);
-        await supabase.from('profiles').update({ balance: newBal }).eq('id', tx.user_id);
+        await supabase.from('profiles').update({ balance: newBal, has_deposited: true }).eq('id', tx.user_id);
         setUsers(prev => prev.map(u => u.id === tx.user_id ? { ...u, balance: newBal } : u));
+        if (!prof?.has_deposited && prof?.referred_by) {
+          const { data: referrer } = await supabase.from('profiles').select('id, referral_balance').eq('referral_code', prof.referred_by).single();
+          if (referrer) {
+            const newRefBal = (referrer.referral_balance || 0) + 1;
+            await supabase.from('profiles').update({ referral_balance: newRefBal }).eq('id', referrer.id);
+          }
+        }
       }
     }
     setTransactions(prev => prev.map(t => t.id === id ? { ...t, status } : t));

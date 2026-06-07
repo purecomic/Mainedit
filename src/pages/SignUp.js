@@ -9,6 +9,7 @@ export default function SignUp() {
   const [confirm, setConfirm] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [refCode, setRefCode] = useState('');
   const [success, setSuccess] = useState('');
   const { signUp } = useAuth();
   const navigate = useNavigate();
@@ -19,6 +20,7 @@ export default function SignUp() {
     if (password !== confirm) return setError('Passwords do not match.');
     if (password.length < 6) return setError('Password must be at least 6 characters.');
     setLoading(true);
+    if (refCode) localStorage.setItem('referral_code', refCode);
     const { error: err } = await signUp(email, password, fullName);
     setLoading(false);
     if (err) return setError(err.message);
