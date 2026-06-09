@@ -423,7 +423,7 @@ export default function Admin() {
                       const { data: audioData, error: audioError } = await supabase.storage.from('effects').upload('audio/' + fileName, item.file, { contentType: 'audio/mpeg' });
                       if (audioError) throw audioError;
                       const { data: urlData } = supabase.storage.from('effects').getPublicUrl('audio/' + fileName);
-                      await supabase.from('sound_effects').insert({
+                      await supabase.from('effects').insert({
                         title: item.title,
                         description: item.description,
                         price: parseFloat(item.price),
