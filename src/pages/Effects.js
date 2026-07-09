@@ -15,6 +15,8 @@ export default function Effects() {
   const [playing, setPlaying] = useState(null);
   const [activeCategory, setActiveCategory] = useState('all');
   const audioRef = useRef(null);
+  const [duration, setDuration] = useState({});
+  const [progress, setProgress] = useState(0);
 
   useEffect(() => {
     loadEffects();
@@ -42,7 +44,16 @@ export default function Effects() {
       if (audioRef.current) audioRef.current.pause();
       audioRef.current = new Audio(effect.preview_url || effect.audio_url);
       audioRef.current.play();
-      audioRef.current.onended = () => setPlaying(null);
+      audioRef.current.onended = () => { setPlaying(null); setProgress(0); };
+      audioRef.current.onloadedmetadata = () => {
+        const d = audioRef.current.duration;
+        const mins = Math.floor(d/60);
+        const secs = Math.floor(d%60).toString().padStart(2,'0');
+        setDuration(prev => ({...prev, [effect.id]: mins+':'+secs}));
+      };
+      audioRef.current.ontimeupdate = () => {
+        if(audioRef.current.duration) setProgress((audioRef.current.currentTime/audioRef.current.duration)*100);
+      };
       setPlaying(effect.id);
     }
   };
@@ -111,6 +122,8 @@ export default function Effects() {
                 <div style={{ fontWeight: 600, fontSize: 14 }}>{effect.title}</div>
                 <div style={{ fontSize: 11, color: 'var(--text2)', marginTop: 2 }}>{effect.description}</div>
                 <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 2, textTransform: 'capitalize' }}>{effect.category}</div>
+              {duration[effect.id] && <div style={{ fontSize: 10, color: 'var(--accent)', marginTop: 2 }}>⏱ {duration[effect.id]}</div>}
+              {playing === effect.id && <div style={{ height: 3, background: 'var(--bg3)', borderRadius: 2, marginTop: 4 }}><div style={{ height: '100%', width: progress+'%', background: 'var(--accent)', borderRadius: 2, transition: 'width 0.3s' }}></div></div>}
               </div>
               <div style={{ textAlign: 'right', flexShrink: 0 }}>
                 <div style={{ fontWeight: 700, color: 'var(--accent)', fontSize: 15 }}>${effect.price}</div>
